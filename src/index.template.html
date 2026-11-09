@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>秦始皇陵大逃脱 — 진시황릉을 탈출해라!</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&family=Noto+Serif+KR:wght@700;900&family=Noto+Serif+SC:wght@700;900&display=swap" rel="stylesheet">
+<style>
+/*__CSS__*/
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<div id="vignette"></div>
+<div id="redflash"></div>
+<div id="fade"></div>
+
+<!-- ===== 시작 화면 ===== -->
+<section id="scr-title" class="screen">
+  <div class="title-wrap">
+    <div class="seal">秦</div>
+    <h1 class="t-main">秦始皇陵大逃脱</h1>
+    <div class="t-ko">진시황릉을 탈출해라!</div>
+    <div class="t-en">ESCAPE FROM THE TOMB OF QIN SHI HUANG</div>
+    <div class="t-sub"><span class="zh">你被困在秦始皇陵里了！</span><span class="py">Nǐ bèi kùn zài Qín Shǐhuáng líng lǐ le!</span>
+      <span class="zh">你能成功逃出去吗？</span><span class="py">Nǐ néng chénggōng táo chūqu ma?</span></div>
+    <div class="menu">
+      <button class="btn gold" data-act="start"><b>开始游戏</b><small>게임 시작</small></button>
+      <button class="btn" data-act="help"><b>游戏说明</b><small>게임 설명</small></button>
+      <button class="btn" data-act="sound"><b>音效设置</b><small>사운드 설정</small></button>
+      <button class="btn" data-act="records"><b>学习记录</b><small>학습 기록</small></button>
+    </div>
+    <div class="t-foot">데스크톱 Chrome · Edge 권장 · 키보드와 마우스로 플레이합니다</div>
+  </div>
+</section>
+
+<!-- ===== 이름 / 난이도 ===== -->
+<section id="scr-setup" class="screen hidden">
+  <div class="panel setup">
+    <h2>探险家登记 <small>탐험가 등록</small></h2>
+    <div id="continue-box" class="continue hidden">
+      <div>저장된 탐험이 있어요: <b id="cont-info"></b></div>
+      <button class="btn gold" data-act="continue"><b>继续游戏</b><small>이어하기</small></button>
+    </div>
+    <label class="lbl">이름 <span class="zh-s">名字 míngzi</span></label>
+    <input id="inp-name" maxlength="10" placeholder="이름을 입력하세요" autocomplete="off">
+    <label class="lbl">난이도 <span class="zh-s">难度 nándù</span></label>
+    <div class="diffs">
+      <button class="diff" data-diff="easy"><b>简单 · 쉬움</b><span>제한 시간 20분<br>힌트 무제한<br>선택지 4개</span></button>
+      <button class="diff sel" data-diff="normal"><b>普通 · 보통</b><span>제한 시간 15분<br>힌트 5회<br>선택지 3~4개</span></button>
+      <button class="diff" data-diff="hard"><b>困难 · 어려움</b><span>제한 시간 10분<br>힌트 2회<br>일부 직접 입력</span></button>
+    </div>
+    <div class="row-btns">
+      <button class="btn" data-act="back"><b>返回</b><small>뒤로</small></button>
+      <button class="btn gold" data-act="newgame"><b>开始探险</b><small>새 탐험 시작</small></button>
+    </div>
+    <div id="setup-msg" class="msg"></div>
+  </div>
+</section>
+
+<!-- ===== 인트로 ===== -->
+<section id="scr-intro" class="screen hidden">
+  <div class="letterbox top"></div><div class="letterbox bot"></div>
+  <div id="intro-sub" class="intro-sub"></div>
+  <button class="btn small skip" data-act="skip">건너뛰기 ▶▶</button>
+  <button id="btn-escape-start" class="btn gold big hidden" data-act="begin"><b>开始逃脱</b><small>탈출 시작</small></button>
+</section>
+
+<!-- ===== HUD ===== -->
+<section id="hud" class="hidden">
+  <div class="hud-tl">
+    <div class="h-title">秦始皇陵大逃脱</div>
+    <div class="h-zone"><span id="zone-zh"></span> <span id="zone-ko"></span></div>
+    <div class="h-time">⏳ <span id="timer">15:00</span></div>
+    <div id="hearts" class="hearts"></div>
+  </div>
+  <div class="hud-tr">
+    <div class="h-score">分数 <b id="score">0</b></div>
+    <div class="h-codes"><span class="cl">密码</span><span id="codes"></span></div>
+    <div class="h-hint">💡 힌트 <b id="hints-left"></b></div>
+  </div>
+  <div id="crosshair"></div>
+  <div id="prompt" class="hidden"><kbd>E</kbd> <span id="prompt-txt"></span></div>
+  <div id="toasts"></div>
+  <div class="hud-left"><div id="objective"></div>
+  <button id="clue-btn" data-act="cluelog">📜 <b>线索</b> 중국어 단서 <span id="clue-count">0/8</span></button>
+  <button id="nb-btn" class="hidden" data-act="notebook">📒 <b>事件笔记</b> 사건 수첩 <span id="nb-count"></span> <kbd>N</kbd></button></div>
+  <div id="inventory" class="inventory"></div>
+  <div class="hud-bottom">
+    <span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 이동</span>
+    <span><kbd>Shift</kbd> 달리기</span><span><kbd>Space</kbd> 점프</span>
+    <span><kbd>E</kbd> 조사</span><span>🖱 드래그 시점</span><span><kbd>ESC</kbd> 일시정지</span>
+  </div>
+  <canvas id="minimap" width="200" height="200"></canvas>
+</section>
+
+<!-- ===== 미션 패널 ===== -->
+<section id="mission" class="overlay hidden">
+  <div class="panel mpanel">
+    <div class="m-head">
+      <div><div id="m-title" class="m-title"></div><div id="m-sub" class="m-sub"></div></div>
+      <div id="m-dots" class="m-dots"></div>
+      <button class="xbtn" data-act="mclose" title="닫기 (ESC)">✕</button>
+    </div>
+    <div id="m-body" class="m-body"></div>
+  </div>
+</section>
+
+<!-- ===== 단서 문서 ===== -->
+<section id="doc" class="overlay hidden">
+  <div class="scroll"><button class="xbtn" data-act="doc-close">✕</button><div id="doc-body"></div></div>
+</section>
+
+<!-- ===== 사건 수첩 ===== -->
+<section id="notebook" class="overlay hidden">
+  <div class="panel nbook">
+    <button class="xbtn" data-act="nb-close">✕</button>
+    <div class="nb-head"><span class="nb-title">事件笔记 <small>사건 수첩 · 사라진 황제의 옥새</small></span><span id="nb-clues"></span></div>
+    <div class="nb-tabs">
+      <button data-tab="case"><b>事件记录</b>사건 기록</button><button data-tab="sus"><b>嫌疑人</b>용의자</button>
+      <button data-tab="clues"><b>线索</b>발견한 단서</button><button data-tab="time"><b>时间表</b>시간표</button><button data-tab="solve"><b>推理结果</b>추리 결과</button>
+    </div>
+    <div id="nb-body" class="nb-body"></div>
+  </div>
+</section>
+
+<!-- ===== 암호 입력 ===== -->
+<section id="codepanel" class="overlay hidden">
+  <div class="panel cpanel">
+    <div class="m-title">生门密码 <small>최종 탈출 암호</small></div>
+    <div class="m-sub">다섯 미션에서 얻은 암호를 <b>획득한 순서대로</b> 입력하세요.</div>
+    <div id="code-slots" class="code-slots"></div>
+    <div id="code-msg" class="code-msg"></div>
+    <div class="pad"></div>
+    <div class="row-btns"><button class="btn" data-act="cclose"><b>关闭</b><small>닫기</small></button><button class="btn gold" data-act="csubmit"><b>确认</b><small>확인</small></button></div>
+  </div>
+</section>
+
+<!-- ===== 공용 모달 ===== -->
+<section id="modal" class="overlay hidden">
+  <div class="panel modal"><button class="xbtn" data-act="modal-close">✕</button><div id="modal-body"></div></div>
+</section>
+
+<!-- ===== 결과 화면 ===== -->
+<section id="scr-end" class="screen hidden"><div id="end-body" class="panel endp"></div></section>
+
+<div id="nogl" class="hidden"><div class="panel"><h2>3D 그래픽을 시작할 수 없어요</h2><p>이 브라우저 또는 컴퓨터에서 WebGL2를 사용할 수 없습니다.<br>최신 Chrome 또는 Edge에서 다시 열어 주세요. (설정 → 시스템 → “가능한 경우 그래픽 가속 사용”을 켜 주세요.)</p></div></div>
+<script>
+/*__JS__*/
+</script>
+</body>
+</html>

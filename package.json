@@ -1,0 +1,11 @@
+{
+  "name": "qin-escape",
+  "version": "1.0.0",
+  "description": "秦始皇陵大逃脱 — 진시황릉을 탈출해라! 중학교 중국어 3D 방탈출 게임",
+  "private": true,
+  "scripts": {
+    "build": "node build.js",
+    "start": "node build.js && npx --yes serve dist"
+  },
+  "license": "MIT"
+}
